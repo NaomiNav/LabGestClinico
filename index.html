@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LabGest Clínico · Diagnóstico de Alta Precisión & Gestión Integral</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- jsPDF & AutoTable via CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+  <style>
+  :root {
+    --primary: #0284c7;
+    --primary-dark: #0369a1;
+    --secondary: #0f172a;
+    --accent: #06b6d4;
+    --logo-navy: #1e3a5f;
+    --logo-teal: #2eb8b0;
+    --logo-light: #7dd3ce;
+    --logo-purple: #7c5cbf;
+    --bg-main: #f8fafc;
+    --surface: #ffffff;
+    --surface-2: #f1f5f9;
+    --border: #e2e8f0;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --card-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.08);
+    --card-shadow-hover: 0 20px 40px -8px rgba(2, 132, 199, 0.22);
+  }
+
+  [data-bs-theme="dark"] {
+    --primary: #38bdf8;
+    --primary-dark: #0284c7;
+    --secondary: #f8fafc;
+    --accent: #22d3ee;
+    --logo-navy: #cbd5e1;
+    --bg-main: #060c1c;
+    --surface: #0f172a;
+    --surface-2: #1a2540;
+    --border: #1e293b;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --card-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.5);
+    --card-shadow-hover: 0 20px 40px -8px rgba(56, 189, 248, 0.25);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    top: -300px; right: -300px;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(2,132,199,0.16), transparent 70%);
+    z-index: -1;
+    pointer-events: none;
+  }
+  body::after {
+    content: "";
+    position: fixed;
+    bottom: -350px; left: -350px;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(46,184,176,0.14), transparent 70%);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* ============ LOGO EMBLEMA ============ */
+  .brand-logo-new {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform 0.25s ease;
+  }
+  .brand-logo-new:hover { transform: scale(1.04); }
+
+  .brand-logo-img {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+    border-radius: 50%;
+    background: #ffffff;
+    padding: 3px;
+    box-shadow: 0 4px 12px rgba(30, 58, 95, 0.22);
+    border: 2px solid #ffffff;
+    transition: all 0.3s ease;
+  }
+  .brand-logo-new:hover .brand-logo-img {
+    box-shadow: 0 6px 18px rgba(46, 184, 176, 0.45);
+    border-color: var(--logo-teal);
+    transform: rotate(-3deg);
+  }
+
+  .brand-text {
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: var(--logo-navy);
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+    line-height: 1;
+  }
+  .brand-text .brand-accent { color: var(--logo-teal); }
+
+  /* ============ NAVBAR ============ */
+  .navbar-clinical {
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 0;
+    transition: all 0.3s ease;
+  }
+  [data-bs-theme="dark"] .navbar-clinical {
+    background: rgba(15, 23, 42, 0.78);
+  }
+
+  .navbar-inner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .nav-pills-custom {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    align-items: center;
+    gap: 4px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 4px;
+    margin: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .nav-pills-custom::-webkit-scrollbar { display: none; }
+
+  .nav-pills-custom .nav-link {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.82rem;
+    padding: 8px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .nav-pills-custom .nav-link:hover {
+    color: var(--primary);
+    background: rgba(2, 132, 199, 0.08);
+    transform: translateY(-1px);
+  }
+  .nav-pills-custom .nav-link.active {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: #ffffff !important;
+    box-shadow: 0 6px 16px rgba(2, 132, 199, 0.35);
+  }
+
+  .theme-btn {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-main);
+    display: grid; place-items: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    flex-shrink: 0;
+  }
+  .theme-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: rotate(18deg) scale(1.05);
+  }
+
+  .btn, .btn-outline-primary, .btn-primary {
+    transition: all 0.25s ease-in-out;
+    cursor: pointer;
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+  .btn:active {
+    transform: translateY(0);
+  }
+
+  /* ============ HERO CAROUSEL ============ */
+  .hero-carousel {
+    border-radius: 26px;
+    overflow: hidden;
+    box-shadow: 0 24px 50px -18px rgba(15, 23, 42, 0.35);
+    border: 1px solid var(--border);
+  }
+  .hero-carousel .carousel-item {
+    height: 460px;
+    position: relative;
+  }
+  .hero-slide-img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transform: scale(1.05);
+    transition: transform 6s ease-out;
+  }
+  .carousel-item.active .hero-slide-img { transform: scale(1.14); }
+
+  .hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(100deg, rgba(2, 30, 60, 0.92) 0%, rgba(2, 30, 60, 0.72) 45%, rgba(2, 30, 60, 0.15) 100%);
+  }
+  .hero-caption {
+    position: absolute; inset: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 clamp(20px, 5%, 60px);
+    text-align: left;
+  }
+  .hero-caption h1, .hero-caption h2 {
+    color: #ffffff;
+    font-weight: 800;
+    line-height: 1.15;
+    text-shadow: 0 2px 14px rgba(0,0,0,0.35);
+  }
+  .hero-caption p {
+    color: rgba(255,255,255,0.85);
+    max-width: 560px;
+  }
+  .hero-caption-inner {
+    max-width: 620px;
+    animation: captionIn 0.8s ease-out;
+  }
+  @keyframes captionIn {
+    from { opacity: 0; transform: translateY(22px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hero-pill {
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+    backdrop-filter: blur(6px);
+  }
+
+  /* ============ STATS ============ */
+  .stats-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-top: -46px;
+    position: relative;
+    z-index: 5;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 20px 14px;
+    text-align: center;
+    box-shadow: var(--card-shadow);
+    transition: all 0.28s ease;
+  }
+  .stat-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--primary);
+    box-shadow: var(--card-shadow-hover);
+  }
+  .stat-num {
+    font-size: 1.7rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--logo-teal));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  /* ============ CARDS ============ */
+  .card-clinical {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: var(--card-shadow);
+    padding: 24px;
+    transition: all 0.3s cubic-bezier(.2,.7,.3,1);
+  }
+  .card-clinical:hover {
+    border-color: var(--primary);
+    transform: translateY(-3px);
+    box-shadow: var(--card-shadow-hover);
+  }
+
+  .area-card {
+    overflow: hidden;
+    padding: 0;
+    cursor: pointer;
+    height: 100%;
+  }
+  .card-img-header {
+    height: 165px;
+    object-fit: cover;
+    width: 100%;
+    transition: transform 0.6s ease;
+  }
+  .area-card:hover .card-img-header { transform: scale(1.08); }
+  .area-img-wrap { overflow: hidden; position: relative; }
+  .area-img-wrap::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 40%, rgba(15,23,42,0.55));
+  }
+  .area-icon-float {
+    position: absolute;
+    bottom: -22px; left: 20px;
+    width: 46px; height: 46px;
+    border-radius: 14px;
+    display: grid; place-items: center;
+    color: #fff;
+    font-size: 1.25rem;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.28);
+    z-index: 2;
+  }
+
+  /* ============ TABLES ============ */
+  .table-custom { --bs-table-bg: transparent; color: var(--text-main); }
+  .table-custom thead th {
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 700;
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px;
+    white-space: nowrap;
+  }
+  .table-custom tbody td {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+    font-size: 0.9rem;
+  }
+  .table-custom tbody tr { transition: background 0.2s ease; }
+  .table-custom tbody tr:hover { background: rgba(2, 132, 199, 0.05); }
+
+  /* ============ BADGES ============ */
+  .status-badge-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 6px 13px;
+    border-radius: 30px;
+    white-space: nowrap;
+  }
+  .status-ready { background: rgba(34, 197, 94, 0.14); color: #16a34a; }
+  .status-processing { background: rgba(245, 158, 11, 0.14); color: #d97706; }
+  .pulse-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .pulse-ready { background: #22c55e; box-shadow: 0 0 0 0 rgba(34,197,94,0.6); animation: pulseR 1.8s infinite; }
+  .pulse-proc { background: #f59e0b; box-shadow: 0 0 0 0 rgba(245,158,11,0.6); animation: pulseP 1.8s infinite; }
+  @keyframes pulseR { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.55); } 70% { box-shadow: 0 0 0 10px rgba(34,197,94,0); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); } }
+  @keyframes pulseP { 0% { box-shadow: 0 0 0 0 rgba(245,158,11,0.55); } 70% { box-shadow: 0 0 0 10px rgba(245,158,11,0); } 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); } }
+
+  /* ============ VIEWS ============ */
+  .page-view { display: none; animation: fadeIn 0.4s ease-in-out; }
+  .page-view.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .section-title {
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .section-title i {
+    width: 34px; height: 34px;
+    display: grid; place-items: center;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(2,132,199,0.15), rgba(46,184,176,0.15));
+    color: var(--primary);
+    font-size: 1rem;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--logo-teal));
+    border: none;
+    font-weight: 600;
+  }
+  .btn-primary:hover {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    box-shadow: 0 8px 20px rgba(2,132,199,0.4);
+  }
+
+  .invalid-feedback-custom {
+    color: #dc3545;
+    font-size: 0.78rem;
+    margin-top: 4px;
+    display: none;
+  }
+
+  /* FOOTER */
+  footer.clinical-footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    margin-top: 60px;
+    padding: 44px 0 24px;
+  }
+  footer.clinical-footer a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+    cursor: pointer;
+    display: block;
+    padding: 4px 0;
+    font-size: 0.88rem;
+  }
+  footer.clinical-footer a:hover { color: var(--primary); }
+
+  .footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    cursor: pointer;
+  }
+
+  .toast-container-custom {
+    position: fixed;
+    bottom: 20px; right: 20px;
+    z-index: 1090;
+  }
+
+  /* BOTÓN WHATSAPP FLOTANTE */
+  .btn-whatsapp-float {
+    position: fixed;
+    bottom: 25px;
+    left: 25px;
+    z-index: 1080;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #25d366;
+    color: white;
+    display: grid; place-items: center;
+    font-size: 1.7rem;
+    box-shadow: 0 8px 20px rgba(37, 211, 102, 0.4);
+    transition: all 0.3s ease;
+    text-decoration: none;
+  }
+  .btn-whatsapp-float:hover {
+    transform: scale(1.1);
+    color: white;
+    box-shadow: 0 12px 26px rgba(37, 211, 102, 0.6);
+  }
+
+  @media (max-width: 991px) {
+    .brand-text { font-size: 1.05rem; }
+    .hero-carousel .carousel-item { height: 420px; }
+    .stats-strip { grid-template-columns: repeat(2, 1fr); margin-top: -30px; }
+  }
+  @media (max-width: 575px) {
+    .brand-text { display: none; }
+    .hero-carousel .carousel-item { height: 400px; }
+    .stats-strip { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  }
+
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+
+<body>
+
+<!-- BOTÓN WHATSAPP -->
+<a href="https://wa.me/0000000000" target="_blank" class="btn-whatsapp-float" title="Contactar por WhatsApp" aria-label="WhatsApp">
+  <i class="bi bi-whatsapp"></i>
+</a>
+
+<!-- ============ NAVEGACIÓN ============ -->
+<nav class="navbar navbar-clinical sticky-top">
+  <div class="container-fluid px-3 px-lg-4">
+    <div class="navbar-inner w-100">
+
+      <a class="brand-logo-new" onclick="navigateTo('page-home')" role="button">
+        <!-- LOGO DEL SISTEMA (SVG en Base64 - No requiere archivo externo) -->
+        <img id="appLogo" src="LOGO_emblema.jpg" class="brand-logo-img" alt="LabGest Logo">
+        <span class="brand-text">LabGest<span class="brand-accent">Clínico</span></span>
+      </a>
+
+      <ul class="nav nav-pills nav-pills-custom">
+        <li class="nav-item"><a class="nav-link active" data-page="page-home" onclick="navigateTo('page-home', this)">Inicio</a></li>
+        <li class="nav-item"><a class="nav-link" data-page="page-nosotros" onclick="navigateTo('page-nosotros', this)">Nosotros</a></li>
+        <li class="nav-item"><a class="nav-link" data-page="page-catalogo" onclick="navigateTo('page-catalogo', this)">Catálogo de Exámenes</a></li>
+        <li class="nav-item"><a class="nav-link" data-page="page-muestras" onclick="navigateTo('page-muestras', this)">Estado de Pruebas</a></li>
+        <li class="nav-item"><a class="nav-link" data-page="page-analizadores" onclick="navigateTo('page-analizadores', this)">Equipamiento</a></li>
+        <li class="nav-item"><a class="nav-link" data-page="page-resultados" onclick="navigateTo('page-resultados', this)">Portal Pacientes PDF</a></li>
+        <li class="nav-item"><a class="nav-link" data-page="page-contacto" onclick="navigateTo('page-contacto', this)">Contacto</a></li>
+      </ul>
+
+      <button id="themeToggle" class="theme-btn" title="Cambiar Tema">
+        <i class="bi bi-moon-stars"></i>
+      </button>
+
+    </div>
+  </div>
+</nav>
+
+<main class="container my-4">
+
+  <!-- ================= SUBPÁGINA 1: INICIO ================= -->
+  <div id="page-home" class="page-view active">
+
+    <!-- CARRUSEL HERO AUTOMÁTICO -->
+    <div id="heroCarousel" class="carousel slide carousel-fade hero-carousel mb-5" data-bs-ride="carousel" data-bs-interval="3500">
+      <div class="carousel-indicators">
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-label="Slide 1"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="4" aria-label="Slide 5"></button>
+      </div>
+
+      <div class="carousel-inner">
+        <div class="carousel-item active">
+          <img src="https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=1600&q=80" class="hero-slide-img" alt="Laboratorio Clínico">
+          <div class="hero-overlay"></div>
+          <div class="hero-caption">
+            <div class="hero-caption-inner">
+              <span class="badge hero-pill fw-semibold px-3 py-2 rounded-pill mb-3">
+                <i class="bi bi-patch-check-fill me-1"></i> Certificación ISO 15189
+              </span>
+              <h1 class="display-5 mb-3">Diagnóstico Clínico Avanzado & Gestión Integral</h1>
+              <p class="fs-6 mb-4">Procesamiento seguro automatizado con robótica médica. Consulta tus análisis y explora nuestro catálogo de estudios actualizados.</p>
+              <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-primary btn-lg rounded-pill px-4" onclick="navigateTo('page-catalogo')">
+                  <i class="bi bi-journal-medical me-2"></i>Ver Exámenes (+25)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="carousel-item">
+          <img src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1600&q=80" class="hero-slide-img" alt="Análisis Bioquímicos">
+          <div class="hero-overlay"></div>
+          <div class="hero-caption">
+            <div class="hero-caption-inner">
+              <span class="badge hero-pill fw-semibold px-3 py-2 rounded-pill mb-3">
+                <i class="bi bi-flask-fill me-1"></i> Bioquímica & Inmunología
+              </span>
+              <h2 class="display-6 mb-3">Estudios de Alta Complejidad</h2>
+              <p class="fs-6 mb-4">Paneles hormonales, perfil metabólico, prueba de embarazo hCG, marcadores tumorales y pruebas inmunológicas procesados con máxima exactitud.</p>
+              <button class="btn btn-primary btn-lg rounded-pill px-4" onclick="navigateTo('page-catalogo')">
+                <i class="bi bi-search me-2"></i>Explorar Catálogo
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="carousel-item">
+          <img src="https://images.unsplash.com/photo-1615461066841-6116e61058f4?auto=format&fit=crop&w=1600&q=80" class="hero-slide-img" alt="Investigación">
+          <div class="hero-overlay"></div>
+          <div class="hero-caption">
+            <div class="hero-caption-inner">
+              <span class="badge hero-pill fw-semibold px-3 py-2 rounded-pill mb-3">
+                <i class="bi bi-virus me-1"></i> Biología Molecular y PCR
+              </span>
+              <h2 class="display-6 mb-3">Detección Genética y Patógenos</h2>
+              <p class="fs-6 mb-4">Diagnóstico molecular ultra sensible mediante amplificación por PCR y aislamiento microbiano automatizado.</p>
+              <button class="btn btn-primary btn-lg rounded-pill px-4" onclick="navigateTo('page-catalogo')">
+                <i class="bi bi-clipboard2-pulse me-2"></i>Ver Pruebas Moleculares
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="carousel-item">
+          <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1600&q=80" class="hero-slide-img" alt="Microbiología">
+          <div class="hero-overlay"></div>
+          <div class="hero-caption">
+            <div class="hero-caption-inner">
+              <span class="badge hero-pill fw-semibold px-3 py-2 rounded-pill mb-3">
+                <i class="bi bi-bug-fill me-1"></i> Microbiología & Cultivos
+              </span>
+              <h2 class="display-6 mb-3">Urocultivos & Antibiogramas</h2>
+              <p class="fs-6 mb-4">Aislamiento bacteriano y susceptibilidad antibiótica con reporte rápido y automatizado.</p>
+              <button class="btn btn-primary btn-lg rounded-pill px-4" onclick="navigateTo('page-catalogo')">
+                <i class="bi bi-shield-check me-2"></i>Consultar Pruebas
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="carousel-item">
+          <img src="https://images.unsplash.com/photo-1631815589968-fdb09a223b1e?auto=format&fit=crop&w=1600&q=80" class="hero-slide-img" alt="Atención">
+          <div class="hero-overlay"></div>
+          <div class="hero-caption">
+            <div class="hero-caption-inner">
+              <span class="badge hero-pill fw-semibold px-3 py-2 rounded-pill mb-3">
+                <i class="bi bi-people-fill me-1"></i> Atención Personalizada
+              </span>
+              <h2 class="display-6 mb-3">Resultados Confiables 24/7</h2>
+              <p class="fs-6 mb-4">Más de 500 estudios disponibles con entrega garantizada y descarga de certificados firmados en el Portal Pacientes.</p>
+              <button class="btn btn-primary btn-lg rounded-pill px-4" onclick="navigateTo('page-resultados')">
+                <i class="bi bi-file-earmark-pdf me-2"></i>Ir a Portal Pacientes
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      </button>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-strip mb-5">
+      <div class="stat-card"><div class="stat-num">+25</div><div class="stat-label">Años de Experiencia</div></div>
+      <div class="stat-card"><div class="stat-num">+500</div><div class="stat-label">Estudios Disponibles</div></div>
+      <div class="stat-card"><div class="stat-num">99.8%</div><div class="stat-label">Confiabilidad</div></div>
+      <div class="stat-card"><div class="stat-num">24/7</div><div class="stat-label">Portal en Línea</div></div>
+    </div>
+
+    <!-- CALCULADORA DE AYUNO Y PREPARACIÓN DE MUESTRAS -->
+    <div class="card-clinical mb-5 reveal">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-5">
+          <span class="badge bg-info-subtle text-info-emphasis fw-bold px-3 py-2 rounded-pill mb-2"><i class="bi bi-clock-history me-1"></i> Asistente de Preparación</span>
+          <h4 class="fw-bold mb-2">¿Cómo prepararte para tu examen?</h4>
+          <p class="text-muted small m-0">Selecciona el estudio que vas a realizarte para conocer las horas exactas de ayuno e instrucciones para la correcta toma de muestra.</p>
+        </div>
+        <div class="col-lg-7">
+          <div class="p-3 border rounded-4 bg-body-tertiary">
+            <label class="form-label fw-bold small text-muted">Selecciona tu Análisis Médico:</label>
+            <select class="form-select rounded-3 mb-3" id="fastingSelect" onchange="calculateFastingInfo()">
+              <option value="">-- Seleccionar estudio --</option>
+              <option value="embarazo">Prueba de Embarazo (hCG Cualitativa / Cuantitativa)</option>
+              <option value="glucosa">Glucosa en Ayunas</option>
+              <option value="lipidico">Perfil Lipídico (Colesterol / Triglicéridos)</option>
+              <option value="hemograma">Hemograma / BHC Completo</option>
+              <option value="tiroideo">Perfil Tiroideo (TSH, T3, T4)</option>
+              <option value="urocultivo">Urocultivo / Examen de Orina</option>
+              <option value="renal">Perfil Renal (Urea, Creatinina, Ácido Úrico)</option>
+              <option value="hepatico">Perfil Hepático (TGO, TGP, Bilirrubinas)</option>
+              <option value="hba1c">Hemoglobina Glicosilada (HbA1c)</option>
+              <option value="parasitologico">Coproparasitológico Seriado</option>
+            </select>
+            <div id="fastingResult" class="p-3 bg-white rounded-3 border" style="display:none;">
+              <h6 class="fw-bold text-primary mb-1" id="fastingTitle">Indicaciones</h6>
+              <p class="small text-muted mb-2" id="fastingHours"></p>
+              <div class="p-2 bg-light text-dark rounded-2 small" id="fastingNotes"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ÁREAS -->
+    <h5 class="section-title reveal"><i class="bi bi-grid-fill"></i>Áreas Analíticas Destacadas</h5>
+    <div class="row g-4 mb-5">
+      <div class="col-md-4 reveal">
+        <div class="card-clinical area-card" onclick="navigateTo('page-catalogo')">
+          <div class="area-img-wrap">
+            <img src="https://images.unsplash.com/photo-1615461066841-6116e61058f4?auto=format&fit=crop&w=600&q=80" class="card-img-header" alt="Hematología">
+            <div class="area-icon-float" style="background: linear-gradient(135deg,#ef4444,#f97316);"><i class="bi bi-droplet-fill"></i></div>
+          </div>
+          <div class="p-3 pt-4">
+            <h6 class="fw-bold m-0 mt-2">Hematología Completa</h6>
+            <p class="text-muted small mt-2 mb-0">Contadores automáticos de 5 estirpes celulares con frotis sanguíneo.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 reveal">
+        <div class="card-clinical area-card" onclick="navigateTo('page-catalogo')">
+          <div class="area-img-wrap">
+            <img src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=600&q=80" class="card-img-header" alt="Bioquímica">
+            <div class="area-icon-float" style="background: linear-gradient(135deg,#0284c7,#2eb8b0);"><i class="bi bi-flask-fill"></i></div>
+          </div>
+          <div class="p-3 pt-4">
+            <h6 class="fw-bold m-0 mt-2">Bioquímica & Lipídico</h6>
+            <p class="text-muted small mt-2 mb-0">Determinaciones fotométricas e inmunoensayos enzimáticos.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 reveal">
+        <div class="card-clinical area-card" onclick="navigateTo('page-catalogo')">
+          <div class="area-img-wrap">
+            <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80" class="card-img-header" alt="Microbiología">
+            <div class="area-icon-float" style="background: linear-gradient(135deg,#f59e0b,#eab308);"><i class="bi bi-virus"></i></div>
+          </div>
+          <div class="p-3 pt-4">
+            <h6 class="fw-bold m-0 mt-2">Microbiología & PCR</h6>
+            <p class="text-muted small mt-2 mb-0">Aislamiento bacteriano y estudios de susceptibilidad antibiótica.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MONITOREO EN TIEMPO REAL -->
+    <div class="card-clinical mb-5 reveal">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <h5 class="fw-bold m-0"><i class="bi bi-broadcast text-primary me-2"></i>Monitoreo en Tiempo Real de Muestras</h5>
+        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="showToastNotification()"><i class="bi bi-bell me-1"></i>Simular Notificación</button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-custom align-middle m-0">
+          <thead>
+            <tr>
+              <th>Protocolo</th><th>Paciente</th><th>Prueba Solicitada</th><th>Estado Actual</th><th class="text-end">Ficha</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="fw-bold text-primary">#9022</td>
+              <td>Mateo López</td>
+              <td>Perfil Renal Completo</td>
+              <td><span class="status-badge-live status-ready"><span class="pulse-dot pulse-ready"></span> Listo en Portal</span></td>
+              <td class="text-end"><button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="openDetailModal('Mateo López', '#9022', 'Perfil Renal Completo', 'Análisis finalizado y validado por el especialista.')">Ver Ficha</button></td>
+            </tr>
+            <tr>
+              <td class="fw-bold text-primary">#9021</td>
+              <td>Sofía Martínez</td>
+              <td>Hemograma + Plaquetas</td>
+              <td><span class="status-badge-live status-ready"><span class="pulse-dot pulse-ready"></span> Listo en Portal</span></td>
+              <td class="text-end"><button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="openDetailModal('Sofía Martínez', '#9021', 'Hemograma + Plaquetas', 'Conteo celular completo y validación técnica sin observaciones.')">Ver Ficha</button></td>
+            </tr>
+            <tr>
+              <td class="fw-bold text-primary">#9020</td>
+              <td>Carlos Ramírez</td>
+              <td>Perfil Tiroideo TSH, T3, T4</td>
+              <td><span class="status-badge-live status-processing"><span class="pulse-dot pulse-proc"></span> En Procesamiento</span></td>
+              <td class="text-end"><button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="openDetailModal('Carlos Ramírez', '#9020', 'Perfil Tiroideo', 'Muestra en incubación de inmunoensayo.')">Ver Ficha</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= SUBPÁGINA 2: NOSOTROS ================= -->
+  <div id="page-nosotros" class="page-view">
+    <div class="row align-items-center g-5 mb-4">
+      <div class="col-lg-6">
+        <span class="badge bg-primary text-white fw-semibold px-3 py-2 rounded-pill mb-3">Trayectoria & Excelencia</span>
+        <h2 class="fw-bold mb-3 display-6">Tecnología Médica al Servicio de la Salud</h2>
+        <p class="text-secondary fs-6">En <strong>LabGest Clínico</strong> procesamos miles de análisis diarios mediante automatización robótica. Ofrecemos confiabilidad analítica con trazabilidad unívoca de muestras.</p>
+
+        <div class="row g-3 mt-4">
+          <div class="col-sm-6">
+            <div class="card-clinical p-3 h-100">
+              <i class="bi bi-shield-check fs-3 text-primary mb-2"></i>
+              <h6 class="fw-bold mb-1">Calidad Certificada</h6>
+              <p class="text-muted small m-0">Normas ISO 15189 y controles internos diarios.</p>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="card-clinical p-3 h-100">
+              <i class="bi bi-lightning-charge fs-3 text-primary mb-2"></i>
+              <h6 class="fw-bold mb-1">Resultados Rápidos</h6>
+              <p class="text-muted small m-0">Entrega el mismo día para la mayoría de estudios.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <img src="https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80" class="img-fluid rounded-4 shadow-lg" alt="Instalaciones del laboratorio">
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SUBPÁGINA 3: CATÁLOGO DE EXÁMENES ================= -->
+  <div id="page-catalogo" class="page-view">
+    <div class="d-md-flex justify-content-between align-items-center mb-3 gap-3">
+      <div>
+        <h4 class="fw-bold m-0">Catálogo Ampliado de Exámenes Clínicos</h4>
+        <p class="text-muted small m-0">Consulta requerimientos, tipo de muestra y tiempos de respuesta para más de 25 pruebas habituales.</p>
+      </div>
+      <div style="min-width: 280px;">
+        <input type="text" id="searchCatalog" class="form-control rounded-pill px-3" placeholder="🔍 Buscar estudio (ej. Embarazo, Glucosa, Tiroides)..." onkeyup="filterCatalog()">
+      </div>
+    </div>
+
+    <!-- BOTONES DE FILTRADO RÁPIDO -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+      <button class="btn btn-sm btn-outline-primary active rounded-pill px-3" onclick="filterCategory('TODOS', this)">Todos</button>
+      <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="filterCategory('Inmunología', this)">Inmunología</button>
+      <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="filterCategory('Hematología', this)">Hematología</button>
+      <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="filterCategory('Bioquímica', this)">Bioquímica</button>
+      <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="filterCategory('Hormonas', this)">Hormonas</button>
+      <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="filterCategory('Microbiología', this)">Microbiología & Orina</button>
+      <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="filterCategory('Parasitología', this)">Parasitología</button>
+    </div>
+
+    <div class="card-clinical p-0 overflow-hidden">
+      <div class="table-responsive">
+        <table class="table table-custom align-middle m-0" id="catalogTable">
+          <thead>
+            <tr>
+              <th class="ps-4">Análisis</th><th>Categoría</th><th>Tubo / Contenedor</th><th>Indicación de Ayuno / Prep.</th><th>Tiempo Entrega</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Inmunología -->
+            <tr data-category="Inmunología"><td class="ps-4 fw-bold">Prueba de Embarazo (hCG Cualitativa / Cuantitativa)</td><td>Inmunología</td><td><span class="badge bg-danger-subtle text-danger">Gel Separador / Orina</span></td><td>Sin ayuno (Cualquier hora / 1ra orina)</td><td>2 Horas</td></tr>
+            <tr data-category="Inmunología"><td class="ps-4 fw-bold">VIH 1/2 (Antígeno y Anticuerpos 4ta Gen)</td><td>Inmunología</td><td><span class="badge bg-danger-subtle text-danger">Gel Separador</span></td><td>Sin ayuno estricto</td><td>Mismo día</td></tr>
+            <tr data-category="Inmunología"><td class="ps-4 fw-bold">Serología VDRL / RPR (Sífilis)</td><td>Inmunología</td><td><span class="badge bg-danger-subtle text-danger">Gel Separador</span></td><td>Sin ayuno obligatorio</td><td>Mismo día</td></tr>
+            <tr data-category="Inmunología"><td class="ps-4 fw-bold">Hepatitis B (HBsAg) / Hepatitis C (Anti-HCV)</td><td>Inmunología</td><td><span class="badge bg-danger-subtle text-danger">Gel Separador</span></td><td>Ayuno de 6 horas</td><td>Mismo día</td></tr>
+
+            <!-- Hematología -->
+            <tr data-category="Hematología"><td class="ps-4 fw-bold">Hemograma Completo + Plaquetas</td><td>Hematología</td><td><span class="badge bg-primary-subtle text-primary">Tubo EDTA (Morado)</span></td><td>Recomendado 4 horas de ayuno</td><td>2 Horas</td></tr>
+            <tr data-category="Hematología"><td class="ps-4 fw-bold">Velocidad de Sedimentación Globular (VSG)</td><td>Hematología</td><td><span class="badge bg-primary-subtle text-primary">Tubo EDTA (Morado)</span></td><td>Ayuno de 4 a 8 horas</td><td>3 Horas</td></tr>
+            <tr data-category="Hematología"><td class="ps-4 fw-bold">Grupo Sanguíneo y Factor Rh</td><td>Hematología</td><td><span class="badge bg-primary-subtle text-primary">Tubo EDTA (Morado)</span></td><td>Sin necesidad de ayuno</td><td>2 Horas</td></tr>
+            <tr data-category="Hematología"><td class="ps-4 fw-bold">Tiempo de Protrombina (TP / INR)</td><td>Hematología</td><td><span class="badge bg-info-subtle text-info-emphasis">Tubo Citrato (Azul)</span></td><td>Ayuno ligero de 4 horas</td><td>3 Horas</td></tr>
+            <tr data-category="Hematología"><td class="ps-4 fw-bold">Tiempo de Tromboplastina Parcial (TTPa)</td><td>Hematología</td><td><span class="badge bg-info-subtle text-info-emphasis">Tubo Citrato (Azul)</span></td><td>Ayuno ligero de 4 horas</td><td>3 Horas</td></tr>
+            <tr data-category="Hematología"><td class="ps-4 fw-bold">Recuento de Reticulocitos</td><td>Hematología</td><td><span class="badge bg-primary-subtle text-primary">Tubo EDTA (Morado)</span></td><td>Sin ayuno obligatorio</td><td>4 Horas</td></tr>
+
+            <!-- Bioquímica -->
+            <tr data-category="Bioquímica"><td class="ps-4 fw-bold">Glucosa Basal</td><td>Bioquímica</td><td><span class="badge bg-secondary-subtle text-dark">Tubo Fluoruro (Gris)</span></td><td>Ayuno estricto de 8 a 12 horas</td><td>Mismo día</td></tr>
+            <tr data-category="Bioquímica"><td class="ps-4 fw-bold">Hemoglobina Glicosilada (HbA1c)</td><td>Bioquímica</td><td><span class="badge bg-primary-subtle text-primary">Tubo EDTA (Morado)</span></td><td>Sin ayuno estricto obligatorio</td><td>Mismo día</td></tr>
+            <tr data-category="Bioquímica"><td class="ps-4 fw-bold">Perfil Lipídico Completo (Col, HDL, LDL, Trig)</td><td>Bioquímica</td><td><span class="badge bg-danger-subtle text-danger">Gel Separador (Rojo/Amarillo)</span></td><td>Ayuno estricto de 12 horas</td><td>Mismo día</td></tr>
+            <tr data-category="Bioquímica"><td class="ps-4 fw-bold">Perfil Renal (Urea, Creatinina, Ácido Úrico)</td><td>Bioquímica</td><td><span class="badge bg-danger-subtle text-danger">Gel Separador (Rojo/Amarillo)</span></td><td>Ayuno de 8 horas</td><td>Mismo día</td></tr>
+            <tr data-category="Bioquímica"><td class="ps-4 fw-bold">Perfil Hepático (TGO, TGP, Bilirrubinas, FA, GGT)</td><td>Bioquímica</td><td><span class="badge bg-danger-subtle text-danger">Gel Separador (Rojo/Amarillo)</span></td><td>Ayuno de 8 horas</td><td>Mismo día</td></tr>
+            <tr data-category="Bioquímica"><td class="ps-4 fw-bold">Electrólitos Séricos (Sodio, Potasio, Cloro)</td><td>Bioquímica</td><td><span class="badge bg-danger-subtle text-danger">Gel Separador (Rojo/Amarillo)</span></td><td>Ayuno de 8 horas</td><td>Mismo día</td></tr>
+            <tr data-category="Bioquímica"><td class="ps-4 fw-bold">Calcio y Fósforo Sérico</td><td>Bioquímica</td><td><span class="badge bg-danger-subtle text-danger">Gel Separador (Rojo/Amarillo)</span></td><td>Ayuno matutino de 8 horas</td><td>Mismo día</td></tr>
+            <tr data-category="Bioquímica"><td class="ps-4 fw-bold">Proteína C Reactiva (PCR Ultrasensible)</td><td>Bioquímica</td><td><span class="badge bg-danger-subtle text-danger">Gel Separador (Rojo/Amarillo)</span></td><td>Ayuno de 4 a 8 horas</td><td>Mismo día</td></tr>
+
+            <!-- Hormonas -->
+            <tr data-category="Hormonas"><td class="ps-4 fw-bold">Perfil Tiroideo Completo (TSH, T3L, T4L)</td><td>Hormonas</td><td><span class="badge bg-danger-subtle text-danger">Gel Separador</span></td><td>Ayuno de 8 horas (Muestra matutina)</td><td>24 Horas</td></tr>
+            <tr data-category="Hormonas"><td class="ps-4 fw-bold">Cortisol Matutino (8:00 AM)</td><td>Hormonas</td><td><span class="badge bg-danger-subtle text-danger">Gel Separador</span></td><td>Reposo previo, toma a las 8:00 AM</td><td>24 Horas</td></tr>
+            <tr data-category="Hormonas"><td class="ps-4 fw-bold">Insulina Basal</td><td>Hormonas</td><td><span class="badge bg-danger-subtle text-danger">Gel Separador</span></td><td>Ayuno estricto de 8 a 10 horas</td><td>24 Horas</td></tr>
+            <tr data-category="Hormonas"><td class="ps-4 fw-bold">Antígeno Prostático Específico (PSA Total / Libre)</td><td>Hormonas</td><td><span class="badge bg-danger-subtle text-danger">Gel Separador</span></td><td>Sin tacto rectal o ejaculación en 48h</td><td>24 Horas</td></tr>
+
+            <!-- Microbiología y Orina -->
+            <tr data-category="Microbiología"><td class="ps-4 fw-bold">Examen General de Orina (EGO)</td><td>Microbiología</td><td><span class="badge bg-warning-subtle text-warning-emphasis">Frasco Estéril</span></td><td>Primera orina matutina (Chorro medio)</td><td>2 Horas</td></tr>
+            <tr data-category="Microbiología"><td class="ps-4 fw-bold">Urocultivo + Antibiograma Automatizado</td><td>Microbiología</td><td><span class="badge bg-warning-subtle text-warning-emphasis">Frasco Estéril</span></td><td>Higiene previa, sin antisépticos</td><td>48 - 72 Horas</td></tr>
+            <tr data-category="Microbiología"><td class="ps-4 fw-bold">Exudado Faríngeo + Cultivo</td><td>Microbiología</td><td><span class="badge bg-info-subtle text-info-emphasis">Hisopo Estéril (Medio Transport)</span></td><td>Ayuno, sin enjuague bucal previo</td><td>48 Horas</td></tr>
+
+            <!-- Parasitología -->
+            <tr data-category="Parasitología"><td class="ps-4 fw-bold">Coproparasitológico Simple / Seriado</td><td>Parasitología</td><td><span class="badge bg-warning-subtle text-warning-emphasis">Frasco de Heces</span></td><td>Muestra fresca sin contaminación de orina</td><td>Mismo día</td></tr>
+            <tr data-category="Parasitología"><td class="ps-4 fw-bold">Sangre Oculta en Heces (Test Inmunológico)</td><td>Parasitología</td><td><span class="badge bg-warning-subtle text-warning-emphasis">Frasco de Heces</span></td><td>Sin restricciones dietéticas especiales</td><td>Mismo día</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SUBPÁGINA 4: ESTADO MUESTRAS ================= -->
+  <div id="page-muestras" class="page-view">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+      <div>
+        <h4 class="fw-bold m-0">Seguimiento de Muestras</h4>
+        <p class="text-muted small m-0">Monitoreo de órdenes analíticas y estado del procesamiento.</p>
+      </div>
+    </div>
+
+    <div class="card-clinical p-0 overflow-hidden">
+      <div class="table-responsive">
+        <table class="table table-custom align-middle m-0">
+          <thead>
+            <tr><th class="ps-4">Código</th><th>Paciente</th><th>Estudio</th><th>Estado</th><th class="text-end pe-4">Ficha</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="ps-4 fw-bold text-primary">#9022</td>
+              <td>Mateo López</td>
+              <td>Perfil Renal Completo</td>
+              <td><span class="status-badge-live status-ready"><span class="pulse-dot pulse-ready"></span> Listo en Portal</span></td>
+              <td class="text-end pe-4"><button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="openDetailModal('Mateo López', '#9022', 'Perfil Renal Completo', 'Muestra procesada y validada en sistema.')">Ver Ficha</button></td>
+            </tr>
+            <tr>
+              <td class="ps-4 fw-bold text-primary">#9021</td>
+              <td>Sofía Martínez</td>
+              <td>Hemograma + Plaquetas</td>
+              <td><span class="status-badge-live status-ready"><span class="pulse-dot pulse-ready"></span> Listo en Portal</span></td>
+              <td class="text-end pe-4"><button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="openDetailModal('Sofía Martínez', '#9021', 'Hemograma + Plaquetas', 'Conteo automático completo.')">Ver Ficha</button></td>
+            </tr>
+            <tr>
+              <td class="ps-4 fw-bold text-primary">#9020</td>
+              <td>Carlos Ramírez</td>
+              <td>Perfil Tiroideo TSH, T3, T4</td>
+              <td><span class="status-badge-live status-processing"><span class="pulse-dot pulse-proc"></span> En Procesamiento</span></td>
+              <td class="text-end pe-4"><button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="openDetailModal('Carlos Ramírez', '#9020', 'Perfil Tiroideo', 'Muestra en incubación de inmunoensayo.')">Ver Ficha</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SUBPÁGINA 5: EQUIPAMIENTO ================= -->
+  <div id="page-analizadores" class="page-view">
+    <h4 class="fw-bold mb-1">Equipamiento & Robótica Analítica</h4>
+    <p class="text-muted small mb-4">Instrumental de alta fidelidad calibrado continuamente.</p>
+
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="card-clinical h-100">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h6 class="fw-bold m-0">Mindray BC-5000 Hematología</h6>
+              <span class="text-muted small">Serie: #HN-90122</span>
+            </div>
+            <span class="badge bg-success-subtle text-success">Operativo</span>
+          </div>
+          <p class="text-muted small m-0">Control de calidad diario ejecutado correctamente.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card-clinical h-100">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h6 class="fw-bold m-0">COBAS c311 Químico</h6>
+              <span class="text-muted small">Serie: #CB-33109</span>
+            </div>
+            <span class="badge bg-success-subtle text-success">Operativo</span>
+          </div>
+          <p class="text-muted small m-0">Nivel de reactivos óptimo.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SUBPÁGINA 6: PORTAL PACIENTES CON GENERADOR PDF ================= -->
+  <div id="page-resultados" class="page-view">
+    <div class="row justify-content-center">
+      <div class="col-lg-7">
+        <div class="card-clinical p-4 p-md-5">
+          <div class="text-center mb-4">
+            <i class="bi bi-file-earmark-pdf-fill fs-1 text-primary d-block mb-2"></i>
+            <h4 class="fw-bold mb-1">Portal de Descarga de Pacientes</h4>
+            <p class="text-muted small">Ingresa tus datos validados para generar e imprimir de forma inmediata tu informe clínico PDF oficial.</p>
+          </div>
+
+          <form id="pdfForm" onsubmit="handlePDFGeneration(event)">
+            <div class="row g-3">
+
+              <!-- DNI: solo números -->
+              <div class="col-md-6 text-start">
+                <label class="form-label small fw-bold">Documento de Identidad (DUI /Cédula)</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-card-heading"></i></span>
+                  <input type="text"
+                         id="pdfDni"
+                         class="form-control digits-only"
+                         placeholder="Ej. 0801199512345"
+                         pattern="\d{6,15}"
+                         inputmode="numeric"
+                         maxlength="15"
+                         required>
+                </div>
+                <div class="invalid-feedback-custom" id="pdfDniError">Ingresa solo números (mínimo 6 dígitos).</div>
+              </div>
+
+              <!-- Número de Orden: solo números -->
+              <div class="col-md-6 text-start">
+                <label class="form-label small fw-bold">Número de Orden / Protocolo</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-hash"></i></span>
+                  <input type="text"
+                         id="pdfOrderNum"
+                         class="form-control digits-only"
+                         placeholder="Ej. 9022"
+                         pattern="\d{1,8}"
+                         inputmode="numeric"
+                         maxlength="8"
+                         required>
+                </div>
+                <div class="invalid-feedback-custom" id="pdfOrderError">Solo dígitos de protocolo.</div>
+              </div>
+
+              <!-- Nombre Completo Paciente: solo letras -->
+              <div class="col-12 text-start">
+                <label class="form-label small fw-bold">Nombre del Paciente (Para Certificado)</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-person"></i></span>
+                  <input type="text"
+                         id="pdfPatientName"
+                         class="form-control letters-only"
+                         placeholder="Ej. Mateo López Sanabria"
+                         pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{3,60}"
+                         maxlength="60"
+                         required>
+                </div>
+                <div class="invalid-feedback-custom" id="pdfNameError">Solo se permiten letras y espacios.</div>
+              </div>
+
+              <!-- Tipo de Examen en PDF -->
+              <div class="col-12 text-start">
+                <label class="form-label small fw-bold">Seleccionar Examen para Informe</label>
+                <select class="form-select" id="pdfExamType" required>
+                  <option value="Prueba de Embarazo (hCG Subunidad Beta)">Prueba de Embarazo (hCG Subunidad Beta)</option>
+                  <option value="Perfil Renal Completo">Perfil Renal Completo (Urea, Creatinina, Ácido Úrico)</option>
+                  <option value="Hemograma + Plaquetas">Hemograma Completo + Plaquetas</option>
+                  <option value="Perfil Lipídico Completo">Perfil Lipídico (Colesterol, Triglicéridos, HDL, LDL)</option>
+                  <option value="Glucosa y HbA1c">Glucosa Basal + Hemoglobina Glicosilada (HbA1c)</option>
+                  <option value="Perfil Tiroideo TSH T3 T4">Perfil Tiroideo (TSH, T3 Libre, T4 Libre)</option>
+                  <option value="Examen General de Orina">Examen General de Orina (EGO)</option>
+                </select>
+              </div>
+
+              <div class="col-12 mt-4">
+                <button type="submit" class="btn btn-primary btn-lg w-100 fs-6 rounded-pill">
+                  <i class="bi bi-download me-2"></i> Generar y Descargar PDF Oficial
+                </button>
+              </div>
+
+            </div>
+          </form>
+
+          <div class="mt-4 p-3 bg-light rounded-3 text-muted small text-start">
+            <i class="bi bi-shield-lock-fill text-success me-1"></i> <strong>Nota de Seguridad:</strong> El documento generado cuenta con código QR único de validación y firma de bioseguridad del laboratorio.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SUBPÁGINA 7: CONTACTO ================= -->
+  <div id="page-contacto" class="page-view">
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="card-clinical h-100">
+          <h5 class="fw-bold mb-3">Atención al Paciente</h5>
+          <p class="text-muted small">Horario de extracción: Lunes a Viernes de 06:30 a 12:00 hs.</p>
+          <div class="mt-4">
+            <p class="m-0 fw-bold"><i class="bi bi-geo-alt text-primary me-2"></i>Av. Ciencia 1420</p>
+            <p class="m-0 text-muted small ms-4">Ciudad Médica</p>
+          </div>
+          <div class="mt-3">
+            <p class="m-0 fw-bold"><i class="bi bi-telephone text-primary me-2"></i>+503 55509-199</p>
+            <p class="m-0 text-muted small ms-4">Atención 24 horas</p>
+          </div>
+          <div class="mt-3">
+            <p class="m-0 fw-bold"><i class="bi bi-envelope text-primary me-2"></i>contacto@labgest.com</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-7">
+        <div class="card-clinical p-4">
+          <h5 class="fw-bold mb-3">Envíanos un Mensaje</h5>
+          <form id="contactForm" onsubmit="handleContactSubmit(event)">
+            <div class="row g-3">
+
+              <!-- Nombres: solo letras -->
+              <div class="col-md-6 text-start">
+                <label class="form-label small fw-bold">Nombre Completo</label>
+                <input type="text"
+                       id="contactName"
+                       class="form-control letters-only"
+                       placeholder="Nombre y Apellido"
+                       pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{3,50}"
+                       maxlength="50"
+                       required>
+              </div>
+
+              <!-- Teléfono: solo números -->
+              <div class="col-md-6 text-start">
+                <label class="form-label small fw-bold">Teléfono de Contacto</label>
+                <input type="text"
+                       id="contactPhone"
+                       class="form-control digits-only"
+                       placeholder="Ej. 78901234"
+                       pattern="\d{7,12}"
+                       inputmode="numeric"
+                       maxlength="12"
+                       required>
+              </div>
+
+              <!-- Correo -->
+              <div class="col-12 text-start">
+                <label class="form-label small fw-bold">Correo Electrónico</label>
+                <input type="email" class="form-control" placeholder="paciente@correo.com" required>
+              </div>
+
+              <!-- Mensaje -->
+              <div class="col-12 text-start">
+                <label class="form-label small fw-bold">Consulta o Mensaje</label>
+                <textarea class="form-control" rows="4" placeholder="Escribe tu consulta sobre exámenes, ayunos o citas..." required></textarea>
+              </div>
+
+              <div class="col-12">
+                <button type="submit" class="btn btn-primary rounded-pill px-4">Enviar Mensaje</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="clinical-footer">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="footer-logo" onclick="navigateTo('page-home')">
+          <!-- LOGO DEL SISTEMA (Mismo SVG Base64) -->
+          <img id="footerLogo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjI0MCIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMWUzYTVmIiBzdHJva2Utd2lkdGg9IjE2Ii8+PHBhdGggZD0iTTE2MCAzMjAgTDE2MCAxNjAgTDE5MCAxNjAgTDE5MCAyOTAgTDI2MCAyOTAgTDI2MCAzMjAgWiIgZmlsbD0iIzFlM2E1ZiIvPjxwYXRoIGQ9Ik0yNjAgMjQwIEwyNjAgMTYwIEwyOTAgMTYwIEwyOTAgMjQwIFoiIGZpbGw9IiMyZWI4YjAiLz48cGF0aCBkPSJNMzQwIDMyMCBMMzQwIDE2MCBMMzcwIDE2MCBMMzcwIDMyMCBaIiBmaWxsPSIjN2M1Y2JmIi8+PHBhdGggZD0iTTE2MCAzNjAgTDM3MCAzNjAgTDM3MCAzODAgTDE2MCAzODAgWiIgZmlsbD0iIzJlYjhiMCIvPjwvc3ZnPg==" class="brand-logo-img" alt="LabGest Logo">
+          <span class="brand-text">LabGest<span class="brand-accent">Clínico</span></span>
+        </div>
+        <p class="text-muted small mb-0">Diagnóstico clínico de alta precisión con trazabilidad unívoca de muestras y automatización robótica.</p>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h6 class="fw-bold small text-uppercase mb-2">Navegación</h6>
+        <a onclick="navigateTo('page-home')">Inicio</a>
+        <a onclick="navigateTo('page-nosotros')">Nosotros</a>
+        <a onclick="navigateTo('page-catalogo')">Catálogo</a>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h6 class="fw-bold small text-uppercase mb-2">Servicios</h6>
+        <a onclick="navigateTo('page-muestras')">Estado de Pruebas</a>
+        <a onclick="navigateTo('page-analizadores')">Equipamiento</a>
+        <a onclick="navigateTo('page-resultados')">Portal Pacientes</a>
+      </div>
+      <div class="col-lg-4">
+        <h6 class="fw-bold small text-uppercase mb-2">Contacto</h6>
+        <p class="text-muted small m-0"><i class="bi bi-geo-alt me-1"></i>Av. Ciencia 1420, Ciudad Médica</p>
+        <p class="text-muted small m-0"><i class="bi bi-telephone me-1"></i>+00 800 555 0199</p>
+        <p class="text-muted small m-0"><i class="bi bi-envelope me-1"></i>contacto@labgest.com</p>
+      </div>
+    </div>
+    <hr class="my-4" style="border-color: var(--border);">
+    <p class="text-center text-muted small m-0">© 2026 LabGest Clínico · Todos los derechos reservados.</p>
+  </div>
+</footer>
+
+<!-- ============ MODAL FICHA ============ -->
+<div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow-lg">
+      <div class="modal-header border-bottom-0">
+        <h5 class="modal-title fw-bold" id="modalTitle">Ficha de Estudio</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer border-top-0">
+        <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TOAST ============ -->
+<div class="toast-container-custom">
+  <div id="liveToast" class="toast align-items-center text-bg-primary border-0 rounded-4 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body">
+        <i class="bi bi-check-circle-fill me-2"></i><strong>¡Protocolo #9022 Listo!</strong> Puedes consultar tus resultados en la sección Portal Pacientes PDF.
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  /* ================= 1. NAVEGACIÓN Y TEMAS ================= */
+  function navigateTo(pageId, element = null) {
+    document.querySelectorAll('.page-view').forEach(page => page.classList.remove('active'));
+    const targetPage = document.getElementById(pageId);
+    if (targetPage) targetPage.classList.add('active');
+
+    document.querySelectorAll('.nav-pills-custom .nav-link').forEach(link => {
+      link.classList.toggle('active', link.getAttribute('data-page') === pageId);
+    });
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.getElementById('themeToggle').addEventListener('click', function() {
+    const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-bs-theme', newTheme);
+    this.querySelector('i').className = newTheme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-stars';
+  });
+
+  /* ================= 2. CARROUSEL AUTOMÁTICO Y RESTRICCIONES DE ENTRADA ================= */
+  document.addEventListener('DOMContentLoaded', function() {
+
+    const carouselEl = document.getElementById('heroCarousel');
+    if (carouselEl) {
+      new bootstrap.Carousel(carouselEl, {
+        interval: 3500,
+        ride: 'carousel',
+        touch: true
+      });
+    }
+
+    // Restricción: SOLO NÚMEROS
+    const digitInputs = document.querySelectorAll('.digits-only');
+    digitInputs.forEach(input => {
+      input.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '');
+      });
+      input.addEventListener('paste', function() {
+        setTimeout(() => this.value = this.value.replace(/[^0-9]/g, ''), 0);
+      });
+      input.addEventListener('keypress', function(e) {
+        if (!/[0-9]/.test(e.key)) {
+          e.preventDefault();
+        }
+      });
+    });
+
+    // Restricción: SOLO LETRAS Y ESPACIOS
+    const letterInputs = document.querySelectorAll('.letters-only');
+    letterInputs.forEach(input => {
+      input.addEventListener('input', function() {
+        this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+      });
+      input.addEventListener('paste', function() {
+        setTimeout(() => this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, ''), 0);
+      });
+      input.addEventListener('keypress', function(e) {
+        if (!/[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/.test(e.key)) {
+          e.preventDefault();
+        }
+      });
+    });
+
+  });
+
+  /* ================= 3. FILTROS Y BUSCADORES DE CATÁLOGO ================= */
+  function filterCatalog() {
+    const input = document.getElementById("searchCatalog").value.toUpperCase();
+    const trs = document.querySelectorAll("#catalogTable tbody tr");
+    trs.forEach(tr => {
+      const td = tr.getElementsByTagName("td")[0];
+      if (td) {
+        const textValue = td.textContent || td.innerText;
+        tr.style.display = textValue.toUpperCase().indexOf(input) > -1 ? "" : "none";
+      }
+    });
+  }
+
+  function filterCategory(cat, btn) {
+    document.querySelectorAll('#page-catalogo .btn-outline-primary').forEach(b => b.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+
+    const trs = document.querySelectorAll("#catalogTable tbody tr");
+    trs.forEach(tr => {
+      if (cat === 'TODOS') {
+        tr.style.display = "";
+      } else {
+        tr.style.display = tr.getAttribute('data-category') === cat ? "" : "none";
+      }
+    });
+  }
+
+  /* ================= 4. ASISTENTE INTERACTIVO DE AYUNOS ================= */
+  function calculateFastingInfo() {
+    const val = document.getElementById('fastingSelect').value;
+    const resBox = document.getElementById('fastingResult');
+    const title = document.getElementById('fastingTitle');
+    const hours = document.getElementById('fastingHours');
+    const notes = document.getElementById('fastingNotes');
+
+    if (!val) {
+      resBox.style.display = "none";
+      return;
+    }
+
+    resBox.style.display = "block";
+    const fastingMap = {
+      'embarazo': { title: "Prueba de Embarazo (hCG Cualitativa / Cuantitativa)", hours: "⏰ Requisito: Sin ayuno estricto obligatorio.", notes: "💡 En sangre (cuantitativa): se realiza a cualquier hora del día. En orina (cualitativa): se sugiere la primera orina de la mañana por mayor concentración de hormona hCG." },
+      'glucosa': { title: "Glucosa en Ayunas", hours: "⏰ Requisito: Ayuno de 8 a 12 horas.", notes: "💡 Evitar ingesta de alimentos sólidos o bebidas endulzadas. Se permite tomar únicamente agua simple." },
+      'lipidico': { title: "Perfil Lipídico (Colesterol / Triglicéridos)", hours: "⏰ Requisito: Ayuno estricto de 12 horas.", notes: "💡 Evitar cenas copiosas grasas o consumo de alcohol 24 horas antes." },
+      'hemograma': { title: "Hemograma Completo / BHC", hours: "⏰ Requisito: Ayuno ligero (4 horas recomendadas).", notes: "💡 Muestra de sangre venosa EDTA. En urgencias no requiere ayuno." },
+      'tiroideo': { title: "Perfil Tiroideo (TSH, T3, T4)", hours: "⏰ Requisito: Ayuno matutino de 8 horas.", notes: "💡 Acudir de preferencia antes de las 10:00 AM dada la secreción pulsátil de TSH." },
+      'urocultivo': { title: "Urocultivo / Examen General de Orina", hours: "⏰ Requisito: Primera orina matutina.", notes: "💡 Higiene genital previa, descartar el primer chorro e ingerir la porción media en frasco estéril." },
+      'renal': { title: "Perfil Renal (Urea, Creatinina, Ácido Úrico)", hours: "⏰ Requisito: Ayuno de 8 horas.", notes: "💡 Mantenerse bien hidratado únicamente con agua pura las horas previas." },
+      'hepatico': { title: "Perfil Hepático (TGO, TGP, Bilirrubinas)", hours: "⏰ Requisito: Ayuno de 8 horas.", notes: "💡 Evitar medicamentos no esenciales la mañana de la toma si su médico lo autoriza." },
+      'hba1c': { title: "Hemoglobina Glicosilada (HbA1c)", hours: "⏰ Requisito: Sin ayuno obligatorio.", notes: "💡 Refleja el promedio de glucemia de los últimos 3 meses." },
+      'parasitologico': { title: "Coproparasitológico Seriado", hours: "⏰ Requisito: Muestra de heces fresca.", notes: "💡 Recolectar en recipiente limpio sin mezcla de orina ni agua del inodoro." }
+    };
+
+    if (fastingMap[val]) {
+      title.innerText = fastingMap[val].title;
+      hours.innerText = fastingMap[val].hours;
+      notes.innerText = fastingMap[val].notes;
+    }
+  }
+
+  /* FUNCION AUXILIAR PARA CONVERTIR LA IMAGEN A BASE64 E IMPRIMIRLA EN EL PDF */
+  function getBase64ImageFromElement(imgEl) {
+    return new Promise((resolve) => {
+      if (!imgEl) { resolve(null); return; }
+
+      const convertToDataURL = (img) => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        try {
+          resolve(canvas.toDataURL("image/png"));
+        } catch (e) {
+          console.warn("No se pudo convertir el logo a Base64:", e);
+          resolve(null);
+        }
+      };
+
+      // Si ya está cargada en el DOM, la usamos directamente
+      if (imgEl.complete && imgEl.naturalWidth > 0) {
+        convertToDataURL(imgEl);
+        return;
+      }
+
+      // Si no, recargamos con CORS habilitado
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => convertToDataURL(img);
+      img.onerror = () => resolve(null);
+      img.src = imgEl.src;
+    });
+  }
+
+  /* ================= 5. GENERACIÓN DE INFORME PDF CON LOGO INCLUIDO ================= */
+  async function generateClinicalPDF(dni, orderNum, patientName, examType) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const primaryColor = [2, 132, 199];
+    const darkNavy = [30, 58, 95];
+
+    // Encabezado
+    doc.setFillColor(...darkNavy);
+    doc.rect(0, 0, 210, 32, 'F');
+
+    // DIBUJAR LOGO EMBLEMA EN EL ENCABEZADO DEL PDF
+    const appLogo = document.getElementById('appLogo');
+    if (appLogo) {
+      const logoBase64 = await getBase64ImageFromElement(appLogo);
+      if (logoBase64) {
+        doc.addImage(logoBase64, 'PNG', 8, 3, 26, 26);
+      }
+    }
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("LABGEST CLÍNICO", 40, 15);
+
+    doc.setFontSize(8.5);
+    doc.setFont("helvetica", "normal");
+    doc.text("DIAGNÓSTICO CLÍNICO AUTOMATIZADO & ALTA PRECISIÓN", 40, 21);
+    doc.text("ISO 15189 CERTIFIED · TEL: +00 800 555 0199", 40, 26);
+
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.text("INFORME OFICIAL", 150, 16);
+
+    // Datos del Paciente
+    doc.setFillColor(241, 245, 249);
+    doc.roundedRect(14, 38, 182, 34, 3, 3, 'F');
+
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text(`PACIENTE: `, 18, 46);
+    doc.setFont("helvetica", "normal");
+    doc.text(patientName.toUpperCase(), 45, 46);
+
+    doc.setFont("helvetica", "bold");
+    doc.text(`DNI / CÉDULA: `, 18, 54);
+    doc.setFont("helvetica", "normal");
+    doc.text(dni, 45, 54);
+
+    doc.setFont("helvetica", "bold");
+    doc.text(`ESTUDIO: `, 18, 63);
+    doc.setFont("helvetica", "normal");
+    doc.text(examType, 45, 63);
+
+    doc.setFont("helvetica", "bold");
+    doc.text(`PROTOCOLO #: `, 125, 46);
+    doc.setFont("helvetica", "normal");
+    doc.text(orderNum, 160, 46);
+
+    const today = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute:'2-digit' });
+    doc.setFont("helvetica", "bold");
+    doc.text(`FECHA EMISIÓN: `, 125, 54);
+    doc.setFont("helvetica", "normal");
+    doc.text(today, 160, 54);
+
+    doc.setFont("helvetica", "bold");
+    doc.text(`ESTADO: `, 125, 63);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(22, 163, 74);
+    doc.text("VALIDADO / FIRMADO", 160, 63);
+
+    let tableHead = [["Parámetro Analítico", "Resultado Obtenido", "Unidades", "Valores de Referencia"]];
+    let tableBody = [];
+
+    if (examType.includes("Embarazo")) {
+      tableBody = [
+        ["Subunidad Beta-hCG Cuantitativa", "1.250,5", "mIU/mL", "No embarazada < 5,0 mIU/mL"],
+        ["Interpretación Clínica", "POSITIVO (+)", "Resultado", "Compatible con gestación activa (3-4 sem)"]
+      ];
+    } else if (examType.includes("Renal")) {
+      tableBody = [
+        ["Urea en Sangre", "32.4", "mg/dL", "15.0 - 45.0 mg/dL"],
+        ["Creatinina Sérica", "0.92", "mg/dL", "0.60 - 1.20 mg/dL"],
+        ["Ácido Úrico", "5.1", "mg/dL", "3.5 - 7.2 mg/dL"],
+        ["BUN (Nitrógeno Ureico)", "15.1", "mg/dL", "8.0 - 20.0 mg/dL"],
+        ["Tasa Filtración Glomerular (eGFR)", "104", "mL/min/1.73m²", "> 90 mL/min/1.73m²"]
+      ];
+    } else if (examType.includes("Hemograma")) {
+      tableBody = [
+        ["Eritrocitos (Glóbulos Rojos)", "4.85", "x10^6/µL", "4.20 - 5.80 x10^6/µL"],
+        ["Hemoglobina", "14.2", "g/dL", "12.0 - 16.0 g/dL"],
+        ["Hematocrito", "42.5", "%", "37.0 - 48.0 %"],
+        ["Leucocitos (Glóbulos Blancos)", "6.800", "/µL", "4.500 - 11.000 /µL"],
+        ["Plaquetas", "265.000", "/µL", "150.000 - 450.000 /µL"]
+      ];
+    } else if (examType.includes("Lipídico")) {
+      tableBody = [
+        ["Colesterol Total", "182", "mg/dL", "Deseable < 200 mg/dL"],
+        ["Triglicéridos", "138", "mg/dL", "Deseable < 150 mg/dL"],
+        ["Colesterol HDL (Bueno)", "54", "mg/dL", "> 40 mg/dL (Óptimo)"],
+        ["Colesterol LDL (Malo)", "100.4", "mg/dL", "Deseable < 100 mg/dL"]
+      ];
+    } else if (examType.includes("Tiroideo")) {
+      tableBody = [
+        ["TSH (Hormona Estimulante Tiroides)", "2.14", "µUI/mL", "0.40 - 4.20 µUI/mL"],
+        ["T3 Libre", "3.10", "pg/mL", "2.00 - 4.40 pg/mL"],
+        ["T4 Libre", "1.25", "ng/dL", "0.93 - 1.70 ng/dL"]
+      ];
+    } else if (examType.includes("Glucosa")) {
+      tableBody = [
+        ["Glucosa Basal", "88.0", "mg/dL", "70.0 - 99.0 mg/dL"],
+        ["Hemoglobina Glicosilada (HbA1c)", "5.4", "%", "Normal < 5.7 %"]
+      ];
+    } else {
+      tableBody = [
+        ["Color / Aspecto", "Amarillo / Límpido", "-", "Amarillo / Límpido"],
+        ["Densidad Relativa", "1.018", "-", "1.005 - 1.030"],
+        ["pH Orina", "6.0", "-", "5.0 - 7.5"],
+        ["Proteínas / Glucosa", "Negativo / Negativo", "mg/dL", "Negativo"]
+      ];
+    }
+
+    doc.autoTable({
+      startY: 78,
+      head: tableHead,
+      body: tableBody,
+      theme: 'striped',
+      headStyles: { fillColor: primaryColor, textColor: 255, fontSize: 9, fontStyle: 'bold' },
+      bodyStyles: { fontSize: 8.5, textColor: [30, 41, 59] },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      margin: { left: 14, right: 14 }
+    });
+
+    const finalY = doc.lastAutoTable.finalY + 12;
+
+    doc.setDrawColor(226, 232, 240);
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(14, finalY, 182, 38, 2, 2, 'S');
+
+    // QR simulado
+    doc.setFillColor(30, 58, 95);
+    doc.rect(20, finalY + 5, 28, 28, 'F');
+    doc.setFillColor(255, 255, 255);
+    doc.rect(23, finalY + 8, 10, 10, 'F');
+    doc.rect(35, finalY + 20, 9, 9, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(6);
+    doc.text("VERIFIED", 22, finalY + 31);
+
+    doc.setTextColor(100, 116, 139);
+    doc.setFontSize(8);
+    doc.text("Documento validado mediante firma electrónica de laboratorio.", 54, finalY + 14);
+    doc.text(`Código Único de Autenticidad: LAB-VER-${orderNum}-${dni.substring(0, 4)}`, 54, finalY + 20);
+
+    // Firma
+    doc.setDrawColor(15, 23, 42);
+    doc.line(140, finalY + 24, 186, finalY + 24);
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.text("Dra. Elena Rostova", 146, finalY + 28);
+    doc.setFont("helvetica", "normal");
+    doc.text("Dra. Bioquímica - Reg. 4819", 142, finalY + 32);
+
+    doc.save(`Informe_LabGest_${orderNum}_${dni}.pdf`);
+  }
+
+  function handlePDFGeneration(event) {
+    event.preventDefault();
+    const dni = document.getElementById('pdfDni').value.trim();
+    const orderNum = document.getElementById('pdfOrderNum').value.trim();
+    const patientName = document.getElementById('pdfPatientName').value.trim();
+    const examType = document.getElementById('pdfExamType').value;
+
+    if (!dni || !orderNum || !patientName) {
+      alert("Por favor completa todos los campos requeridos.");
+      return;
+    }
+
+    generateClinicalPDF(dni, orderNum, patientName, examType);
+  }
+
+  function openDetailModal(paciente, codigo, prueba, notas) {
+    document.getElementById('modalTitle').innerText = `${codigo} - ${paciente}`;
+    document.getElementById('modalBody').innerHTML = `
+      <p><strong>Estudio Solicitado:</strong> ${prueba}</p>
+      <p><strong>Observaciones de Proceso:</strong> <span class="badge bg-warning-subtle text-warning-emphasis">${notas}</span></p>
+      <hr>
+      <p class="small text-muted mb-0"><i class="bi bi-shield-check text-success me-1"></i> Muestra identificada con código de barras unívoco. Descarga tu certificado ingresando a Portal Pacientes PDF.</p>
+    `;
+    new bootstrap.Modal(document.getElementById('detailModal')).show();
+  }
+
+  function showToastNotification() {
+    new bootstrap.Toast(document.getElementById('liveToast')).show();
+  }
+
+  function handleContactSubmit(event) {
+    event.preventDefault();
+    const name = document.getElementById('contactName').value;
+    alert(`¡Gracias ${name}! Tu mensaje ha sido enviado exitosamente al área de atención clínica.`);
+    document.getElementById('contactForm').reset();
+  }
+
+  /* Reveal en scroll */
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
